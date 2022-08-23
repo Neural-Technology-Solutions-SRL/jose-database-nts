@@ -24,6 +24,7 @@ namespace CountryApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CountryItem>>> GetCountryItems()
         {
+           
           if (_context.CountryItems == null)
           {
               return NotFound();
@@ -33,7 +34,7 @@ namespace CountryApi.Controllers
 
         // GET: api/CountryItems/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<CountryItem>> GetCountryItem(long id)
+        public async Task<ActionResult<CountryItem>> GetCountryItem(string id)
         {
           if (_context.CountryItems == null)
           {
@@ -51,40 +52,29 @@ namespace CountryApi.Controllers
 
         // PUT: api/CountryItems/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCountryItem(long id, CountryItem countryItem)
+        [HttpPut]
+        public async Task<ActionResult<CountryItem>> PutCountryItem(CountryItem countryItem)
         {
-            if (id != countryItem.Id)
+            var actualItem = _context.CountryItems.Where(country => country.Id == countryItem.Id).FirstOrDefault();
+
+            if (actualItem == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(countryItem).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CountryItemExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            actualItem.Country = countryItem.Country;
+            actualItem.description = countryItem.description;
+            actualItem.IsDone = countryItem.IsDone;
+            actualItem.name = countryItem.name;
+            _context.SaveChanges();
+            return Ok(actualItem);
         }
-
         // POST: api/CountryItems
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<CountryItem>> PostCountryItem(CountryItem countryItem)
         {
+            Console.WriteLine(countryItem.Id);
           if (_context.CountryItems == null)
           {
               return Problem("Entity set 'CountryContext.CountryItems'  is null.");
@@ -97,7 +87,7 @@ namespace CountryApi.Controllers
 
         // DELETE: api/CountryItems/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCountryItem(long id)
+        public async Task<IActionResult> DeleteCountryItem(string id)
         {
             if (_context.CountryItems == null)
             {
@@ -115,7 +105,7 @@ namespace CountryApi.Controllers
             return NoContent();
         }
 
-        private bool CountryItemExists(long id)
+        private bool CountryItemExists(string id)
         {
             return (_context.CountryItems?.Any(e => e.Id == id)).GetValueOrDefault();
         }
