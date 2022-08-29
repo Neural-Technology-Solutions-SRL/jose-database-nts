@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CountryApi.Modals;
+//using CountryApi.Modals;
+using CountryApi.Repository.Models;
+using CountryApi.Repository;
 
 namespace CountryApi.Controllers
 {
@@ -13,9 +15,9 @@ namespace CountryApi.Controllers
     [ApiController]
     public class CountryItemsController : ControllerBase
     {
-        private readonly CountryContext _context;
+        private readonly CountriesDbContext _context;
 
-        public CountryItemsController(CountryContext context)
+        public CountryItemsController(CountriesDbContext context)
         {
             _context = context;
         }
@@ -25,22 +27,22 @@ namespace CountryApi.Controllers
         public async Task<ActionResult<IEnumerable<CountryItem>>> GetCountryItems()
         {
            
-          if (_context.CountryItems == null)
+          if (_context.Countries == null)
           {
               return NotFound();
           }
-            return await _context.CountryItems.ToListAsync();
+            return await _context.Countries.ToListAsync();
         }
 
         // GET: api/CountryItems/5
         [HttpGet("{id}")]
         public async Task<ActionResult<CountryItem>> GetCountryItem(string id)
         {
-          if (_context.CountryItems == null)
+          if (_context.Countries == null)
           {
               return NotFound();
           }
-            var countryItem = await _context.CountryItems.FindAsync(id);
+            var countryItem = await _context.Countries.FindAsync(id);
 
             if (countryItem == null)
             {
@@ -55,7 +57,7 @@ namespace CountryApi.Controllers
         [HttpPut]
         public async Task<ActionResult<CountryItem>> PutCountryItem(CountryItem countryItem)
         {
-            var actualItem = _context.CountryItems.Where(country => country.Id == countryItem.Id).FirstOrDefault();
+            var actualItem = _context.Countries.Where(country => country.Id == countryItem.Id).FirstOrDefault();
 
             if (actualItem == null)
             {
@@ -63,9 +65,9 @@ namespace CountryApi.Controllers
             }
 
             actualItem.Country = countryItem.Country;
-            actualItem.description = countryItem.description;
+            actualItem.Description = countryItem.Description;
             actualItem.IsDone = countryItem.IsDone;
-            actualItem.name = countryItem.name;
+            actualItem.Name = countryItem.Name;
             _context.SaveChanges();
             return Ok(actualItem);
         }
@@ -75,11 +77,11 @@ namespace CountryApi.Controllers
         public async Task<ActionResult<CountryItem>> PostCountryItem(CountryItem countryItem)
         {
             Console.WriteLine(countryItem.Id);
-          if (_context.CountryItems == null)
+          if (_context.Countries == null)
           {
               return Problem("Entity set 'CountryContext.CountryItems'  is null.");
           }
-            _context.CountryItems.Add(countryItem);
+            _context.Countries.Add(countryItem);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetCountryItem", new { id = countryItem.Id }, countryItem);
@@ -89,17 +91,17 @@ namespace CountryApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCountryItem(string id)
         {
-            if (_context.CountryItems == null)
+            if (_context.Countries == null)
             {
                 return NotFound();
             }
-            var countryItem = await _context.CountryItems.FindAsync(id);
+            var countryItem = await _context.Countries.FindAsync(id);
             if (countryItem == null)
             {
                 return NotFound();
             }
 
-            _context.CountryItems.Remove(countryItem);
+            _context.Countries.Remove(countryItem);
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -107,7 +109,7 @@ namespace CountryApi.Controllers
 
         private bool CountryItemExists(string id)
         {
-            return (_context.CountryItems?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Countries?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
